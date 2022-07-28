@@ -57,4 +57,13 @@ export class DadosOrdemService{
             where
         });
     }
+
+    async transactionUpdate(data: any[]): Promise<any[]>{
+        return this.prisma.$transaction(data.map((value) => {
+            return this.prisma.dadosOrdem.update({
+                data: value,
+                where: value.id
+            })
+        }));
+    }
 }

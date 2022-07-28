@@ -2,13 +2,11 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, P
 import { DadosOrdemService } from "./dadosOrdem.service";
 import { DadosOrdem as DadosOrdemModel } from "@prisma/client";
 import { CreateDadosOrdemDTO } from "./dto/createDadosOrdem.dto";
-import { UpdateDadosOrdemDTO, UpdateParamsDTO } from "./dto/updateDadosOrdem.dto";
+import { UpdateParamsDTO } from "./dto/updateDadosOrdem.dto";
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { Roles } from "../roles/decorators/roles.decorator";
 import { Role } from "../roles/enums/role.enum";
-import { UpdateEnderecoDTO } from "../dto/endereco/updateEndereco.dto";
-import { UpdatePedidoDTO } from "../dto/pedido/updatePedido.dto";
 import { CreateEnderecoDTO } from "../dto/endereco/createEndereco.dto";
 import { CreatePedidoDTO } from "../dto/pedido/createPedido.dto";
 
@@ -75,7 +73,7 @@ export class DadosOrdemController{
         const { nome, email, celular, formaPagamento } = dadosOrdemData;
         const { rua, bairro, cidade, numero } = enderecoData;
 
-        return this.dadosOrdem.create({
+        const data = await this.dadosOrdem.create({
             nome: nome,
             email: email,
             celular: celular,
@@ -92,15 +90,14 @@ export class DadosOrdemController{
                     }
                 }
             },
-            pedido: {
-                createMany:{
-                    data: pedidoData
-                }
-            },
             formaPagamento: {
                 connect: formaPagamento
             } 
         })
+
+        this.dadosOrdem.transactionUpdate(pedidoData);
+
+        return data;
     }
 
     // Incompleto, implementação de $transaction necessária
