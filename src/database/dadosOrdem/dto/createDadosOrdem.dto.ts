@@ -51,9 +51,9 @@ export class CreateDadosOrdemDTO{
     @ApiProperty({
         title: "Pedidos",
         description: "Pedidos feitos pelo cliente",
-        example: [{
+        example: {
             produtoId: 1
-        }]
+        }
     })
     pedidos: UpdatePedidoDTO[]
 

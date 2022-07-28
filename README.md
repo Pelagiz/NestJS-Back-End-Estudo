@@ -10,6 +10,12 @@ Estudos em [NestJS](https://docs.nestjs.com/) usando [Swagger](https://swagger.i
 ## Instruções
 
 Crie um arquivo .env conforme o .env.example, substituindo com seu usuário do Postgresql e senha.
+
+
 Execute yarn install.
+
+
 Execute npx prisma db push
+
+
 Execute yarn start
