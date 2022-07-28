@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Roles{
+  id Int @default(autoincrement()) @id
+  role String @db.VarChar(100) @unique
+  contas Conta[]
+}
+
+model Conta{
+  id Int @default(autoincrement()) @id
+  nome String @db.VarChar(100)
+  email String @db.VarChar(255) @unique
+  senha String @db.VarChar(64)
+  celular String @db.VarChar(14)
+  is_verified Boolean @db.Boolean
+  endereco Endereco[]
+  roleId Int
+  Role Roles @relation(fields: [roleId], references: [id])
+}
+
+model Endereco{
+  id Int @default(autoincrement()) @id
+  rua String @db.VarChar(100)
+  bairro String @db.VarChar(100)
+  cidade String @db.VarChar(100)
+  numero String @db.VarChar(5)
+  dadosOrdem DadosOrdem[]
+  contaId Int?
+  conta Conta? @relation(fields: [contaId], references: [id])
+}
+
+model FormaPagamento{
+  id Int @default(autoincrement()) @id
+  formaPagamento String @unique
+  dadosOrdem DadosOrdem[]
+}
+
+
+model DadosOrdem{
+  id Int @default(autoincrement()) @id
+  nome String @db.VarChar(100)
+  email String @db.VarChar(255)
+  celular String @db.VarChar(14)
+  enderecoId Int
+  endereco Endereco @relation(fields: [enderecoId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  formaPagamentoId Int
+  formaPagamento FormaPagamento @relation(fields: [formaPagamentoId], references: [id])
+  pedido Pedido[]
+}
+
+model Produto{
+  id Int @default(autoincrement()) @id
+  nome String @db.VarChar(100)
+  quantidade Int
+  imagem Bytes? @db.ByteA
+  preco_unitario String @db.VarChar(10)
+  pedido Pedido[]
+}
+
+model Pedido{
+  id Int @default(autoincrement()) @id
+  data_efetuada DateTime @db.Date @default(now())
+  data_entregada DateTime? @db.Date
+  produtoId Int
+  produto Produto @relation(fields: [produtoId], references: [id])
+  dadosOrdemId Int
+  dadosOrdem DadosOrdem @relation(fields: [dadosOrdemId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}

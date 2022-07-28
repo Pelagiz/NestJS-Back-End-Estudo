@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Conta" ALTER COLUMN "celular" SET DATA TYPE VARCHAR(14);
