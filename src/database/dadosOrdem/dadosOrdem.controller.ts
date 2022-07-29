@@ -1,12 +1,14 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from "@nestjs/common";
 import { DadosOrdemService } from "./dadosOrdem.service";
 import { DadosOrdem as DadosOrdemModel } from "@prisma/client";
-import { CreateDadosOrdemDTO } from "./dto/createDadosOrdem.dto";
-import { UpdateParamsDTO } from "./dto/updateDadosOrdem.dto";
+import { CreateDadosOrdemDTO, CreateParamsDTO } from "./dto/createDadosOrdem.dto";
+import { UpdateDadosOrdemDTO, UpdateParamsDTO } from "./dto/updateDadosOrdem.dto";
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { Roles } from "../roles/decorators/roles.decorator";
 import { Role } from "../roles/enums/role.enum";
+import { UpdateEnderecoDTO } from "../dto/endereco/updateEndereco.dto";
+import { UpdatePedidoDTO } from "../dto/pedido/updatePedido.dto";
 import { CreateEnderecoDTO } from "../dto/endereco/createEndereco.dto";
 import { CreatePedidoDTO } from "../dto/pedido/createPedido.dto";
 
@@ -58,7 +60,7 @@ export class DadosOrdemController{
     // Incompleto, implementação de $transaction necessária
 
     @Post('dadosOrdem')
-    @ApiBody({type: CreateDadosOrdemDTO})
+    @ApiBody({type: CreateParamsDTO})
     @ApiCreatedResponse({
         description: "A conta foi criada com sucesso!",
     })
@@ -68,12 +70,10 @@ export class DadosOrdemController{
     @ApiInternalServerErrorResponse({
         description: "Servidor decidiu morrer por alguma falha misteriosa do destino!",
     })
-    async createDadosOrdem(@Body() dadosOrdemData: CreateDadosOrdemDTO, 
-        enderecoData: CreateEnderecoDTO, pedidoData : CreatePedidoDTO[] ): Promise<DadosOrdemModel>{
-        const { nome, email, celular, formaPagamento } = dadosOrdemData;
-        const { rua, bairro, cidade, numero } = enderecoData;
+    async createDadosOrdem(@Body() params: CreateParamsDTO ): Promise<DadosOrdemModel>{
+        const { nome, email, celular, formaPagamento, rua, bairro, cidade, numero, id, pedidos } = params;
 
-        const data = await this.dadosOrdem.create({
+        return this.dadosOrdem.create({
             nome: nome,
             email: email,
             celular: celular,
@@ -86,18 +86,19 @@ export class DadosOrdemController{
                         numero
                     },
                     where: {
-                        id: enderecoData.id
+                        id: id
                     }
+                }
+            },
+            pedido: {
+                createMany:{
+                    data: pedidos
                 }
             },
             formaPagamento: {
                 connect: formaPagamento
             } 
         })
-
-        this.dadosOrdem.transactionUpdate(pedidoData);
-
-        return data;
     }
 
     // Incompleto, implementação de $transaction necessária
@@ -106,7 +107,7 @@ export class DadosOrdemController{
     @Roles(Role.Usuario)
     @Put('dadosOrdem/:id')
     @ApiBearerAuth()
-    @ApiBody({type: UpdateParamsDTO})
+    @ApiBody({type: CreateParamsDTO})
     @ApiUnauthorizedResponse({
         description: "Usuário não possui cargo para realizar tal ação!",
     })
@@ -119,11 +120,11 @@ export class DadosOrdemController{
             new ParseIntPipe({errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE})
         )
         id: number,
-        @Body() params: UpdateParamsDTO
+        @Body() params: CreateParamsDTO
     ): Promise<DadosOrdemModel>{
         const { nome, celular, email, formaPagamento, bairro, cidade, rua, numero, pedidos } = params;
 
-        return this.dadosOrdem.update({
+        const data = await this.dadosOrdem.update({
             where: {id},
             data: {
                 nome,
@@ -137,19 +138,19 @@ export class DadosOrdemController{
                         numero,
                     }
                 },
+                pedido: {
+                    createMany: {
+                        data: pedidos
+                    }
+                },
                 formaPagamento: {
                     update: formaPagamento
-                },
-                pedido: {
-                    updateMany: {
-                        data: pedidos,
-                        where: {
-                            dadosOrdemId: id
-                        }
-                    }
                 }
             }
         })
+
+
+        return data;
     }
 
     @UseGuards(JwtAuthGuard)

@@ -1,6 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, IntersectionType } from "@nestjs/swagger";
 import { Prisma } from "@prisma/client";
 import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { CreateEnderecoDTO } from "src/database/dto/endereco/createEndereco.dto";
 import { UpdatePedidoDTO } from "src/database/dto/pedido/updatePedido.dto";
 
 export class CreateDadosOrdemDTO{
@@ -51,11 +52,11 @@ export class CreateDadosOrdemDTO{
     @ApiProperty({
         title: "Pedidos",
         description: "Pedidos feitos pelo cliente",
-        example: {
+        example: [{
             produtoId: 1
-        }
+        }]
     })
-    pedidos: UpdatePedidoDTO[]
+    pedidos: Prisma.Enumerable<Prisma.PedidoCreateManyDadosOrdemInput>
 
 
     @ApiProperty({
@@ -67,3 +68,10 @@ export class CreateDadosOrdemDTO{
     })
     formaPagamento: Prisma.FormaPagamentoWhereUniqueInput;
 }
+
+
+export class CreateParamsDTO extends IntersectionType(
+    CreateDadosOrdemDTO,
+    CreateEnderecoDTO,
+){}
+

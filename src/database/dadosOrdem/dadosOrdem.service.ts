@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DadosOrdem, Prisma } from "@prisma/client";
 import { PrismaService } from "src/database/prisma.service";
+import { CreatePedidoDTO } from "../dto/pedido/createPedido.dto";
+import { CreateProdutoDTO } from "../produto/dto/createProduto.dto";
 
 
 @Injectable()
@@ -11,7 +13,10 @@ export class DadosOrdemService{
         dadosOrdemWhereUniqueInput: Prisma.DadosOrdemWhereUniqueInput
     ): Promise<DadosOrdem>{
         return this.prisma.dadosOrdem.findUnique({
-            where: dadosOrdemWhereUniqueInput
+            where: dadosOrdemWhereUniqueInput,
+            include: {
+                pedido: true
+            }
         });
     }
 
@@ -58,11 +63,23 @@ export class DadosOrdemService{
         });
     }
 
+    async transactionCreate(data: Prisma.PedidoCreateInput[]): Promise<any[]>{
+        return this.prisma.$transaction(data.map((value) => {
+            return this.prisma.pedido.create({
+                data: value
+            })
+        }));
+    }
+
     async transactionUpdate(data: any[]): Promise<any[]>{
         return this.prisma.$transaction(data.map((value) => {
-            return this.prisma.dadosOrdem.update({
-                data: value,
-                where: value.id
+            return this.prisma.pedido.update({
+                data: {
+                    produto: value.produtoId
+                },
+                where: {
+                    id: value.id
+                }
             })
         }));
     }
