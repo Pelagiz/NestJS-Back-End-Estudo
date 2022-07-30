@@ -25,16 +25,18 @@ export class DadosOrdemService{
         take?: number;
         cursor?: Prisma.DadosOrdemWhereUniqueInput
         where?: Prisma.DadosOrdemWhereInput,
-        orderBy?: Prisma.DadosOrdemOrderByWithRelationInput
+        orderBy?: Prisma.DadosOrdemOrderByWithRelationInput,
+        include?: Prisma.DadosOrdemInclude
     }): Promise<DadosOrdem[]>{
-        const { skip, take, cursor, where, orderBy } = params;
+        const { skip, take, cursor, where, orderBy, include } = params;
 
         return this.prisma.dadosOrdem.findMany({
             skip,
             take,
             cursor,
             where,
-            orderBy
+            orderBy,
+            include
         });
     }
 

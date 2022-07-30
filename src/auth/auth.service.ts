@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Conta } from '@prisma/client';
 import { ContaService } from 'src/database/conta/conta.service';
-import { LocalAuthDTO } from './dto/localAuth.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
         });
 
 
-        if(conta && conta.senha === senha){
+        if(conta && await bcrypt.compare(senha, conta.senha)){
             const { senha, ...result} = conta;
             return result;
         }

@@ -17,11 +17,11 @@ export class CreateProdutoDTO{
         title: "Quantidade",
         description: "Quantidade do produto em estoque",
         example: 10,
-        type: Number
+        type: String
     })
-    @IsInt()
+    @IsString()
     @IsNotEmpty()
-    quantidade: number;
+    quantidade: string;
 
     @ApiProperty({
         title: "Preco Unitário",
@@ -33,12 +33,14 @@ export class CreateProdutoDTO{
     @IsNotEmpty()
     precoUnitario: string;
 
+}
+
+export class FileUploadDto {
     @ApiPropertyOptional({
         title: "Imagem",
         description: "Imagem do produto",
-        type: String,
+        type: 'string',
         format: 'binary',
-        example: null
     })
     imagem?: any
 }

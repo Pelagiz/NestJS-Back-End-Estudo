@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "src/auth/auth.module";
 import { PrismaService } from "src/database/prisma.service";
+import { EmailSenderModule } from "src/email-sender/email-sender.module";
 import { ContaController } from "./conta/conta.controller";
 import { ContaService } from "./conta/conta.service";
 import { DadosOrdemController } from "./dadosOrdem/dadosOrdem.controller";
@@ -14,7 +15,7 @@ import { RolesService } from "./roles/roles.service";
 
 
 @Module({
-    imports: [AuthModule],
+    imports: [AuthModule, EmailSenderModule],
     controllers: [ContaController,DadosOrdemController,ProdutoController, RolesController, FormaPagamentoController],
     providers: [PrismaService,ContaService, DadosOrdemService, ProdutoService, RolesService, formaPagamentoService]
 })

@@ -7,10 +7,6 @@ import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorRespo
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { Roles } from "../roles/decorators/roles.decorator";
 import { Role } from "../roles/enums/role.enum";
-import { UpdateEnderecoDTO } from "../dto/endereco/updateEndereco.dto";
-import { UpdatePedidoDTO } from "../dto/pedido/updatePedido.dto";
-import { CreateEnderecoDTO } from "../dto/endereco/createEndereco.dto";
-import { CreatePedidoDTO } from "../dto/pedido/createPedido.dto";
 
 
 @ApiTags('Dados Da Ordem')
@@ -60,7 +56,10 @@ export class DadosOrdemController{
     // Incompleto, implementação de $transaction necessária
 
     @Post('dadosOrdem')
-    @ApiBody({type: CreateParamsDTO})
+    @ApiBody({
+        description: "Cria uma Ordem de entrega de produtos",
+        type: CreateParamsDTO
+    })
     @ApiCreatedResponse({
         description: "A conta foi criada com sucesso!",
     })

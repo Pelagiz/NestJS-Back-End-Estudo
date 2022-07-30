@@ -12,13 +12,16 @@ import { LocalAuthGuard } from "src/auth/local-auth.guard";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { Roles } from "../roles/decorators/roles.decorator";
 import { Role } from "../roles/enums/role.enum";
-
+import * as bcrypt from 'bcrypt';
+import { ThrottlerGuard } from "@nestjs/throttler";
+import { EmailSenderService } from "src/email-sender/emailSender.service";
 
 @ApiTags('Conta')
 @Controller()
 export class ContaController{
     constructor(
         private readonly contaService: ContaService,
+        private mailSender: EmailSenderService,
         private authService: AuthService
     ){}
 
@@ -157,7 +160,7 @@ export class ContaController{
     }
 
     // **************** POST METHODS *************************
-    
+    @UseInterceptors(ExcludePasswordInterceptor)
     @Post('conta')
     // ************** SWAGGER ************************
     @ApiBody({type: CreateContaDTO})
@@ -176,10 +179,14 @@ export class ContaController{
         if(!req.user){
             const {nome,email,senha,celular, is_verified ,enderecos, roles} = contaData;
             try{
-                return this.contaService.create({
+                //just for dev
+                const saltOrRounds = await bcrypt.genSalt();
+                const hash = await bcrypt.hash(senha, saltOrRounds);
+
+                const data = await this.contaService.create({
                     nome,
                     email,
-                    senha,
+                    senha: hash,
                     celular,
                     is_verified,
                     endereco: {
@@ -191,6 +198,11 @@ export class ContaController{
                         connect: roles
                     }
                 });
+
+
+                this.mailSender.sendEmail(contaData);
+
+                return data;
             }catch(e){
                 return e;
             }
@@ -202,6 +214,7 @@ export class ContaController{
     // ****************AUTHENTICATE ************************
 
     @UseGuards(LocalAuthGuard)
+    @UseGuards(ThrottlerGuard)
     @Post('conta/auth/login')
     // **************SWAGGER************************
     @ApiBody({type: LocalAuthDTO})
@@ -218,12 +231,13 @@ export class ContaController{
 
 
     // ****************UPDATE**********************
-
+    @UseInterceptors(ExcludePasswordInterceptor)
     @UseGuards(JwtAuthGuard)
+    @UseGuards(ThrottlerGuard)
     @Put('conta/:id')
     // **************SWAGGER************************
     @ApiBearerAuth()
-    @ApiBody({type: [UpdateContaDto]})
+    @ApiBody({type: UpdateContaDto})
     @ApiOkResponse({
         description: "Ação realizada com sucesso!",
     })

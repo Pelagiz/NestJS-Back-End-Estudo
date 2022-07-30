@@ -61,7 +61,7 @@ model DadosOrdem{
 model Produto{
   id Int @default(autoincrement()) @id
   nome String @db.VarChar(100)
-  quantidade Int
+  quantidade String
   imagem Bytes? @db.ByteA
   preco_unitario String @db.VarChar(10)
   pedido Pedido[]

@@ -1,12 +1,14 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ProdutoService } from "./produto.service";
 import { Produto as ProdutoModel } from "@prisma/client";
-import { CreateProdutoDTO } from "./dto/createProduto.dto";
+import { CreateProdutoDTO, FileUploadDto } from "./dto/createProduto.dto";
 import { UpdateProdutoDTO } from "./dto/updateProduto.dto";
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiProperty, ApiTags, ApiUnauthorizedResponse } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiProperty, ApiTags, ApiUnauthorizedResponse, getSchemaPath, IntersectionType } from "@nestjs/swagger";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { Roles } from "../roles/decorators/roles.decorator";
 import { Role } from "../roles/enums/role.enum";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ExcludeImagemInterceptor } from "src/genericInterceptors/excludeImagem.interceptor";
 
 
 @ApiTags("Produto")
@@ -50,6 +52,9 @@ export class ProdutoController{
     @UseGuards(JwtAuthGuard)
     @Roles(Role.Administrador)
     @Post('produto')
+    @UseInterceptors(ExcludeImagemInterceptor)
+    @UseInterceptors(FileInterceptor('imagem'))
+    @ApiConsumes('multipart/form-data')
     @ApiBearerAuth()
     @ApiCreatedResponse({
         description: "O produto foi criado com sucesso!",
@@ -57,16 +62,21 @@ export class ProdutoController{
     @ApiUnauthorizedResponse({
         description: "Usuário não possui cargo para realizar tal ação!",
     })
-    @ApiBody({type: CreateProdutoDTO})
-    async createProduto(@Body() produtoData: CreateProdutoDTO): Promise<ProdutoModel>{
-        const { nome, quantidade, precoUnitario, imagem } = produtoData;
+    @ApiBody({
+        description: "Cria um produto",
+        type: IntersectionType(CreateProdutoDTO, FileUploadDto)
+    })
+    async createProduto(@Body() produtoData: CreateProdutoDTO, @UploadedFile() file: Express.Multer.File){
+        const { nome, quantidade, precoUnitario } = produtoData;
+
 
         return this.produtoService.create({
             nome,
             quantidade,
             preco_unitario: precoUnitario,
-            imagem
+            imagem: file.buffer
         })
+
     }
     
     @UseGuards(JwtAuthGuard)
