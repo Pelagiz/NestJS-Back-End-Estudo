@@ -1,4 +1,6 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { JwtService } from "@nestjs/jwt";
 import { AuthModule } from "src/auth/auth.module";
 import { PrismaService } from "src/database/prisma.service";
 import { EmailSenderModule } from "src/email-sender/email-sender.module";
@@ -11,12 +13,19 @@ import { formaPagamentoService } from "./formaPagamento/formaPagamento.service";
 import { ProdutoController } from "./produto/produto.controller";
 import { ProdutoService } from "./produto/produto.service";
 import { RolesController } from "./roles/roles.controller";
+import { RolesGuard } from "./roles/roles.guard";
 import { RolesService } from "./roles/roles.service";
 
 
 @Module({
     imports: [AuthModule, EmailSenderModule],
     controllers: [ContaController,DadosOrdemController,ProdutoController, RolesController, FormaPagamentoController],
-    providers: [PrismaService,ContaService, DadosOrdemService, ProdutoService, RolesService, formaPagamentoService]
+    providers: [
+        {
+            provide: APP_GUARD,
+            useClass: RolesGuard
+        },
+        JwtService,
+        PrismaService,ContaService, DadosOrdemService, ProdutoService, RolesService, formaPagamentoService]
 })
 export class DatabaseModule{}

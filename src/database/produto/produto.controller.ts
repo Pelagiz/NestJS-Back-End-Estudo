@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Request, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ProdutoService } from "./produto.service";
 import { Produto as ProdutoModel } from "@prisma/client";
 import { CreateProdutoDTO, FileUploadDto } from "./dto/createProduto.dto";
@@ -66,17 +66,26 @@ export class ProdutoController{
         description: "Cria um produto",
         type: IntersectionType(CreateProdutoDTO, FileUploadDto)
     })
-    async createProduto(@Body() produtoData: CreateProdutoDTO, @UploadedFile() file: Express.Multer.File){
+    async createProduto(@Request() req, @Body() produtoData: CreateProdutoDTO, @UploadedFile() file?: Express.Multer.File){
         const { nome, quantidade, precoUnitario } = produtoData;
 
+
+        if(file){
+            return this.produtoService.create({
+                nome,
+                quantidade,
+                preco_unitario: precoUnitario,
+                imagem: file.buffer
+            })
+        }
 
         return this.produtoService.create({
             nome,
             quantidade,
             preco_unitario: precoUnitario,
-            imagem: file.buffer
         })
 
+        // return req.user;
     }
     
     @UseGuards(JwtAuthGuard)

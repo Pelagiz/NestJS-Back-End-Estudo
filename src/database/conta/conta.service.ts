@@ -11,7 +11,10 @@ export class ContaService{
         contaWhereUniqueInput: Prisma.ContaWhereUniqueInput
     ): Promise<Conta | null>{
         return await this.prisma.conta.findUnique({
-            where: contaWhereUniqueInput
+            where: contaWhereUniqueInput,
+            include: {
+                Role: true
+            }
         })
     }
 
