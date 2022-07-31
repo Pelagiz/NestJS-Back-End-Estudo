@@ -106,7 +106,7 @@ export class DadosOrdemController{
     @Roles(Role.Usuario)
     @Put('dadosOrdem/:id')
     @ApiBearerAuth()
-    @ApiBody({type: CreateParamsDTO})
+    @ApiBody({type: UpdateParamsDTO})
     @ApiUnauthorizedResponse({
         description: "Usuário não possui cargo para realizar tal ação!",
     })
@@ -119,7 +119,7 @@ export class DadosOrdemController{
             new ParseIntPipe({errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE})
         )
         id: number,
-        @Body() params: CreateParamsDTO
+        @Body() params: UpdateParamsDTO
     ): Promise<DadosOrdemModel>{
         const { nome, celular, email, formaPagamento, bairro, cidade, rua, numero, pedidos } = params;
 
@@ -138,9 +138,8 @@ export class DadosOrdemController{
                     }
                 },
                 pedido: {
-                    createMany: {
-                        data: pedidos
-                    }
+                    updateMany: pedidos
+                    
                 },
                 formaPagamento: {
                     update: formaPagamento

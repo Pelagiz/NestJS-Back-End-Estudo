@@ -54,10 +54,11 @@ export class UpdateDadosOrdemDTO{
         title: "Pedidos",
         description: "Pedidos feitos pelo cliente",
         example: [{
-            produtoId: 1
+            data: {produtoId: 2},
+            where: {id: 3}
         }]
     })
-    pedidos?: Prisma.Enumerable<Prisma.PedidoUpdateManyWithoutDadosOrdemNestedInput>
+    pedidos?: Prisma.Enumerable<Prisma.PedidoUpdateManyWithWhereWithoutDadosOrdemInput>;
 
 
     @ApiProperty({

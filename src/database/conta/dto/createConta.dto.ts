@@ -85,8 +85,7 @@ export class CreateContaDTO{
         ]
     })
     // Endereços cadastrados na conta
-    enderecos?: Prisma.Enumerable<Prisma.EnderecoCreateManyContaInput> & 
-        Prisma.Enumerable<Prisma.EnderecoUpdateManyWithWhereWithoutContaInput>;
+    enderecos?: Prisma.Enumerable<Prisma.EnderecoCreateManyContaInput>;
 
     @ApiProperty({
         title: "Roles",

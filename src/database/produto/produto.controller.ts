@@ -83,11 +83,18 @@ export class ProdutoController{
     @Roles(Role.Administrador)
     @Put('produto/:id')
     @ApiBearerAuth()
+    @UseInterceptors(ExcludeImagemInterceptor)
+    @UseInterceptors(FileInterceptor('imagem'))
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        type: IntersectionType(UpdateProdutoDTO, FileUploadDto)
+    })
+    
     @ApiUnauthorizedResponse({
         description: "Usuário não possui cargo para realizar tal ação!",
     })
     async updateProduto(
-        @Body() produtoData: UpdateProdutoDTO, 
+        @Body() produtoData: UpdateProdutoDTO, @UploadedFile() file: Express.Multer.File ,
         @Param('id', new ParseIntPipe({errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE}))
         id: number
     ): Promise<ProdutoModel>{
@@ -100,7 +107,8 @@ export class ProdutoController{
             data: {
                 nome,
                 quantidade,
-                preco_unitario: precoUnitario
+                preco_unitario: precoUnitario,
+                imagem: file.buffer
             }
         })
     }

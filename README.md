@@ -19,3 +19,5 @@ Execute npx prisma db push
 
 
 Execute yarn start
+
+Acesse localhost:3000/api
